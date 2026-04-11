@@ -72,13 +72,15 @@ Use short team codes (RCB, CSK, MI, KKR, SRH, RR, PBKS, DC, GT, LSG). Order by p
     ),
     extractWithClaude(
       stripHTML(ocHtml),
-      `Extract the IPL 2026 Orange Cap (most runs) top 10 batting standings. Return JSON array:
-[{"rank":1,"player":"V Kohli","team":"RCB","runs":320}]`
+      `Extract the IPL 2026 Orange Cap top 10 batting standings from this page. The "runs" field must be an INTEGER (e.g. 320), not a string. Return JSON array exactly like this:
+[{"rank":1,"player":"V Sooryavanshi","team":"RR","runs":215},{"rank":2,"player":"H Klaasen","team":"SRH","runs":198}]
+Only include players with actual run totals. Do not use placeholder text like "runs" as the value.`
     ),
     extractWithClaude(
       stripHTML(pcHtml),
-      `Extract the IPL 2026 Purple Cap (most wickets) top 10 bowling standings. Return JSON array:
-[{"rank":1,"player":"JJ Bumrah","team":"MI","wickets":12}]`
+      `Extract the IPL 2026 Purple Cap top 10 bowling standings from this page. The "wickets" field must be an INTEGER (e.g. 9), not a string. Return JSON array exactly like this:
+[{"rank":1,"player":"Ravi Bishnoi","team":"RR","wickets":9},{"rank":2,"player":"M Prasidh Krishna","team":"GT","wickets":7}]
+Only include players with actual wicket totals. Do not use placeholder text like "wkts" as the value.`
     ),
   ]);
 
