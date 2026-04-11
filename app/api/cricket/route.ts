@@ -54,6 +54,23 @@ export async function GET(req: NextRequest) {
       await db`INSERT INTO cricket_cache (data) VALUES (${JSON.stringify(stats)})`;
     }
 
+    // Sync scraped rankings into live_data so scoring engine picks them up
+    const db2 = getDB();
+    const liveRows = await db2`SELECT id FROM live_data LIMIT 1`;
+    if (liveRows.length > 0 && stats.orangeCap?.length && stats.purpleCap?.length) {
+      const orangeNames = stats.orangeCap.map((r: any) => r.player);
+      const purpleNames = stats.purpleCap.map((r: any) => r.player);
+      const top4Names = stats.pointsTable?.slice(0, 4).map((r: any) => r.shortname || r.team) || [];
+      await db2`
+        UPDATE live_data SET
+          orange_cap_rankings = ${JSON.stringify(orangeNames)},
+          purple_cap_rankings = ${JSON.stringify(purpleNames)},
+          top4_teams = CASE WHEN ${top4Names.length} > 0 THEN ${JSON.stringify(top4Names)}::jsonb ELSE top4_teams END,
+          updated_at = NOW()
+        WHERE id = ${liveRows[0].id}
+      `;
+    }
+
     return NextResponse.json({ ...stats, fromCache: false });
   } catch (err: any) {
     // Return stale cache on error rather than failing

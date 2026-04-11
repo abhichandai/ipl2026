@@ -1,6 +1,7 @@
 import { getDB } from '@/lib/db';
 import { calculateScore } from '@/lib/scoring';
 import LiveStats from '@/components/LiveStats';
+import PicksTable from '@/components/PicksTable';
 
 export const revalidate = 60;
 
@@ -118,6 +119,7 @@ export default async function Leaderboard() {
             ))}
           </div>
         </div>
+      <PicksTable entries={entries} />
       </div>
 
       {/* RIGHT: Live Tournament Stats */}
