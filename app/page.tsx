@@ -3,7 +3,7 @@ import { calculateScore } from '@/lib/scoring';
 import LiveStats from '@/components/LiveStats';
 import PicksTable from '@/components/PicksTable';
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 export default async function Leaderboard() {
   let entries: any[] = [];
@@ -11,8 +11,25 @@ export default async function Leaderboard() {
 
   try {
     const db = getDB();
-    const liveRows = await db`SELECT * FROM live_data LIMIT 1`;
+    const [liveRows, cacheRows] = await Promise.all([
+      db`SELECT * FROM live_data LIMIT 1`,
+      db`SELECT data FROM cricket_cache LIMIT 1`.catch(() => []),
+    ]);
     if (liveRows[0]) live = liveRows[0];
+
+    // If live_data rankings are empty, pull from cricket_cache
+    const cached = (cacheRows as any[])[0]?.data;
+    if (cached) {
+      if (!live.orange_cap_rankings?.length && cached.orangeCap?.length) {
+        live.orange_cap_rankings = cached.orangeCap.map((r: any) => r.player);
+      }
+      if (!live.purple_cap_rankings?.length && cached.purpleCap?.length) {
+        live.purple_cap_rankings = cached.purpleCap.map((r: any) => r.player);
+      }
+      if (!live.top4_teams?.length && cached.pointsTable?.length) {
+        live.top4_teams = cached.pointsTable.slice(0, 4).map((r: any) => r.shortname || r.team);
+      }
+    }
 
     const users = await db`
       SELECT u.id, u.display_name, p.*,
