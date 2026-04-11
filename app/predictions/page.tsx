@@ -56,7 +56,7 @@ export default function PredictionsPage() {
     });
 
     // Load live player lists from CricAPI (cached)
-    fetch('/api/cricket').then(r => r.json()).then(d => {
+    fetch('/api/players').then(r => r.json()).then(d => {
       if (d.batters?.length > 5) {
         setBatters(d.batters.sort());
         setPlayerListSource('live');

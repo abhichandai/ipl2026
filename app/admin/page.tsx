@@ -6,7 +6,7 @@ const TEAMS = ['RCB', 'CSK', 'MI', 'KKR', 'SRH', 'RR', 'PBKS', 'DC', 'GT', 'LSG'
 
 export default function AdminPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<'live' | 'games'>('live');
+  const [tab, setTab] = useState<'live' | 'games' | 'stats'>('live');
   const [loading, setLoading] = useState(true);
 
   // Live data state
@@ -86,17 +86,29 @@ export default function AdminPage() {
     loadGames();
   }
 
-  if (loading) return <div className="text-center py-20 text-gray-500">Loading...</div>;
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshMsg, setRefreshMsg] = useState('');
+
+  async function refreshStats() {
+    setRefreshing(true); setRefreshMsg('');
+    const res = await fetch('/api/cricket?refresh=1&key=ipl2026');
+    const d = await res.json();
+    setRefreshing(false);
+    setRefreshMsg(d.error ? '❌ ' + d.error : '✅ Stats refreshed!');
+    setTimeout(() => setRefreshMsg(''), 4000);
+  }
+
+  if (loading) return <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>Loading...</div>;
 
   return (
     <div>
       <h1 className="text-3xl font-bold text-yellow-400 mb-6">⚙️ Admin Panel</h1>
 
       <div className="flex gap-2 mb-6">
-        {(['live', 'games'] as const).map(t => (
+        {(['live', 'games', 'stats'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 rounded-lg font-semibold text-sm ${tab === t ? 'bg-yellow-400 text-gray-900' : 'bg-gray-800 text-gray-400 hover:text-white'}`}>
-            {t === 'live' ? '📊 Live Standings' : '🎮 Games'}
+            {t === 'live' ? '📊 Live Standings' : t === 'games' ? '🎮 Games' : '🏏 Tournament Stats'}
           </button>
         ))}
       </div>
@@ -164,6 +176,34 @@ export default function AdminPage() {
         </div>
       )}
 
+      {tab === 'stats' && (
+        <div className="card" style={{ padding: '24px' }}>
+          <h2 style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 18, margin: '0 0 8px' }}>
+            🏏 Live Tournament Stats
+          </h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '0 0 20px' }}>
+            Pulls Points Table, Orange Cap & Purple Cap from ESPNcricinfo via AI scraping.
+            Cached for 3 hours. Use manual refresh to update immediately.
+          </p>
+          <button
+            onClick={refreshStats}
+            disabled={refreshing}
+            className="btn-primary"
+            style={{ fontSize: 14, padding: '10px 20px' }}
+          >
+            {refreshing ? '⏳ Scraping ESPNcricinfo...' : '🔄 Refresh Stats Now'}
+          </button>
+          {refreshMsg && (
+            <p style={{ marginTop: 12, fontSize: 13, fontWeight: 600, color: refreshMsg.startsWith('✅') ? 'var(--green)' : '#DC2626' }}>
+              {refreshMsg}
+            </p>
+          )}
+          <p style={{ marginTop: 16, fontSize: 11, color: 'var(--text-muted)' }}>
+            Stats also auto-refresh once every 3 hours when any user visits the leaderboard.
+          </p>
+        </div>
+      )}
+
       {tab === 'games' && (
         <div className="space-y-4">
           {/* Add game */}
@@ -219,3 +259,4 @@ export default function AdminPage() {
     </div>
   );
 }
+// Appended refresh export - handled inline in the component above
