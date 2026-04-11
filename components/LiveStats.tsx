@@ -56,7 +56,7 @@ export default function LiveStats() {
   );
 
   return (
-    <div style={{ position: 'sticky', top: 76 }}>
+    <div className="live-stats-sticky" style={{ position: 'sticky', top: 76 }}>
 
       {/* Points Table — all 10 teams */}
       {data.pointsTable?.length > 0 && (
@@ -83,7 +83,7 @@ export default function LiveStats() {
 
       {/* Orange & Purple Cap side by side */}
       {(data.orangeCap?.length > 0 || data.purpleCap?.length > 0) && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+        <div className="cap-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
 
           {/* Orange Cap */}
           <div className="card" style={{ padding: '14px 14px' }}>

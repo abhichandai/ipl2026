@@ -38,7 +38,7 @@ export default async function Leaderboard() {
   ];
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 28, alignItems: 'start' }}>
+    <div className="leaderboard-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 28, alignItems: 'start' }}>
       {/* LEFT: Leaderboard */}
       <div>
         <div style={{ marginBottom: 28 }}>
@@ -102,7 +102,7 @@ export default async function Leaderboard() {
         {/* Scoring rules */}
         <div className="card" style={{ padding: '18px 20px' }}>
           <p style={{ margin: '0 0 12px', fontWeight: 700, fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Scoring Rules</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}>
+          <div className="scoring-rules-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}>
             {[
               ['🏆', 'Correct IPL Winner', '10 pts'],
               ['🏅', 'Each correct Top 4', '3 pts'],

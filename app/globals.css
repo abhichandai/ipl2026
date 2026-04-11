@@ -67,3 +67,32 @@ h1, h2, h3, .display {
 .input:focus { border-color: var(--accent); background: white; }
 
 select.input { cursor: pointer; }
+
+/* ── Mobile responsive ─────────────────────────────────── */
+@media (max-width: 700px) {
+  /* Leaderboard: stack sidebar below leaderboard */
+  .leaderboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Sidebar: unstick on mobile */
+  .live-stats-sticky {
+    position: static !important;
+  }
+
+  /* Cap tables: stay side by side but tighter */
+  .cap-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Nav: tighten spacing */
+  .nav-links {
+    gap: 4px !important;
+  }
+
+  /* Scoring rules: single column on mobile */
+  .scoring-rules-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
