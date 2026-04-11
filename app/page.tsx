@@ -45,7 +45,13 @@ export default async function Leaderboard() {
     entries = users.map((u: any) => {
       if (!u.orange_cap_1) return { name: u.display_name, total: 0, breakdown: null, hasPicks: false };
       const score = calculateScore(u, live, Number(u.game_wins || 0));
-      return { name: u.display_name, total: score.total, breakdown: score, hasPicks: true };
+      return {
+        name: u.display_name, total: score.total, breakdown: score, hasPicks: true,
+        orange_cap_1: u.orange_cap_1, orange_cap_2: u.orange_cap_2, orange_cap_3: u.orange_cap_3,
+        purple_cap_1: u.purple_cap_1, purple_cap_2: u.purple_cap_2, purple_cap_3: u.purple_cap_3,
+        top4_team_1: u.top4_team_1, top4_team_2: u.top4_team_2, top4_team_3: u.top4_team_3, top4_team_4: u.top4_team_4,
+        ipl_winner: u.ipl_winner,
+      };
     }).sort((a: any, b: any) => b.total - a.total);
   } catch (e) {}
 
