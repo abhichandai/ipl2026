@@ -109,7 +109,7 @@ export default async function Leaderboard() {
               ['🟠🟣', 'Cap holder #1', '7 pts'],
               ['🟠🟣', 'Cap Top 3', '3 pts'],
               ['🟠🟣', 'Cap Top 10', '1 pt'],
-              ['🎮', 'Each correct game', '1 pt'],
+              // ['🎮', 'Each correct game', '1 pt'],
             ].map(([icon, label, pts]) => (
               <div key={String(label)} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
                 <span style={{ color: 'var(--text-muted)' }}>{icon} {label}</span>
