@@ -1,6 +1,69 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #F7F4EE;
+  --surface: #FFFFFF;
+  --surface2: #F0EDE7;
+  --border: #E5E0D8;
+  --text: #1A1410;
+  --text-muted: #7A7168;
+  --accent: #E8500A;
+  --accent-light: #FFF0EA;
+  --accent2: #2563EB;
+  --gold: #D4A017;
+  --gold-light: #FFF8E6;
+  --purple: #7C3AED;
+  --purple-light: #F3EEFF;
+  --green: #16A34A;
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; }
 
 body {
-  background-color: #030712;
-  color: white;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
+
+h1, h2, h3, .display {
+  font-family: 'Bricolage Grotesque', sans-serif;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 12px 24px;
+  transition: all 0.15s ease;
+  border: none;
+  cursor: pointer;
+}
+.btn-primary:hover { background: #C94008; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.input {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  width: 100%;
+  transition: border-color 0.15s;
+  outline: none;
+}
+.input:focus { border-color: var(--accent); background: white; }
+
+select.input { cursor: pointer; }

@@ -17,41 +17,56 @@ export default function Nav() {
   }
 
   return (
-    <nav className="border-b border-gray-800 bg-gray-900">
-      <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-          🏏 <span className="text-yellow-400">IPL 2026</span>
+    <nav style={{
+      background: 'white',
+      borderBottom: '1px solid var(--border)',
+      position: 'sticky',
+      top: 0,
+      zIndex: 50,
+    }}>
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 20px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 22 }}>🏏</span>
+          <span style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 800, fontSize: 18, color: 'var(--text)' }}>
+            IPL <span style={{ color: 'var(--accent)' }}>2026</span>
+          </span>
         </Link>
-        <div className="flex items-center gap-4 text-sm">
-          <Link href="/" className={`hover:text-yellow-400 ${pathname === '/' ? 'text-yellow-400' : 'text-gray-400'}`}>
-            Leaderboard
-          </Link>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <NavLink href="/" active={pathname === '/'}>Leaderboard</NavLink>
           {user ? (
             <>
-              <Link href="/predictions" className={`hover:text-yellow-400 ${pathname === '/predictions' ? 'text-yellow-400' : 'text-gray-400'}`}>
-                My Picks
-              </Link>
-              {user.is_admin && (
-                <Link href="/admin" className={`hover:text-yellow-400 ${pathname === '/admin' ? 'text-yellow-400' : 'text-gray-400'}`}>
-                  Admin
-                </Link>
-              )}
-              <span className="text-gray-500">|</span>
-              <span className="text-gray-300">{user.display_name}</span>
-              <button onClick={logout} className="text-gray-500 hover:text-red-400">Logout</button>
+              <NavLink href="/predictions" active={pathname === '/predictions'}>My Picks</NavLink>
+              {user.is_admin && <NavLink href="/admin" active={pathname === '/admin'}>Admin</NavLink>}
+              <span style={{ color: 'var(--border)', margin: '0 4px' }}>|</span>
+              <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>{user.display_name}</span>
+              <button onClick={logout} style={{ fontSize: 13, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px' }}>
+                Logout
+              </button>
             </>
           ) : (
             <>
-              <Link href="/login" className={`hover:text-yellow-400 ${pathname === '/login' ? 'text-yellow-400' : 'text-gray-400'}`}>
-                Login
-              </Link>
-              <Link href="/signup" className="bg-yellow-400 text-gray-900 px-3 py-1 rounded font-semibold hover:bg-yellow-300">
-                Sign Up
-              </Link>
+              <NavLink href="/login" active={pathname === '/login'}>Login</NavLink>
+              <Link href="/signup" style={{
+                background: 'var(--accent)', color: 'white', textDecoration: 'none',
+                fontSize: 13, fontWeight: 700, padding: '7px 16px', borderRadius: 8,
+                fontFamily: 'Bricolage Grotesque, sans-serif',
+              }}>Sign Up</Link>
             </>
           )}
         </div>
       </div>
     </nav>
+  );
+}
+
+function NavLink({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+  return (
+    <Link href={href} style={{
+      textDecoration: 'none', fontSize: 13, fontWeight: 500,
+      color: active ? 'var(--accent)' : 'var(--text-muted)',
+      padding: '6px 10px', borderRadius: 8,
+      background: active ? 'var(--accent-light)' : 'transparent',
+    }}>{children}</Link>
   );
 }

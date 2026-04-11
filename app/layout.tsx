@@ -1,9 +1,6 @@
 import type { Metadata } from 'next';
-
 import './globals.css';
 import Nav from '@/components/Nav';
-
-
 
 export const metadata: Metadata = {
   title: 'IPL 2026 Predictor',
@@ -13,9 +10,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`bg-gray-950 text-white min-h-screen`}>
+      <body>
         <Nav />
-        <main className="max-w-4xl mx-auto px-4 py-8">{children}</main>
+        <main style={{ maxWidth: 860, margin: '0 auto', padding: '32px 20px' }}>
+          {children}
+        </main>
       </body>
     </html>
   );
