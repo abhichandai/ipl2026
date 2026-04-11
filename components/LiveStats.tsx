@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 
 interface PointsRow { team: string; shortname: string; played: number; won: number; lost: number; points: number; nrr: string; }
-interface CapRow { rank: number; player: string; team: string; value: number; }
+interface CapRow { rank: number; player: string; team: string; value?: number; runs?: number; wickets?: number; }
 
 const TEAM_COLORS: Record<string, string> = {
   RCB: '#E8500A', CSK: '#F5A623', MI: '#005FA8', KKR: '#3D1C6E',
@@ -98,7 +98,7 @@ export default function LiveStats() {
                 <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 12 }}>{row.rank}</span>
                 <span style={{ fontSize: 12, fontWeight: 500 }}>{row.player}</span>
               </div>
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>{row.value} runs</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>{row.runs ?? row.value} runs</span>
             </div>
           ))}
         </StatCard>
@@ -113,7 +113,7 @@ export default function LiveStats() {
                 <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 12 }}>{row.rank}</span>
                 <span style={{ fontSize: 12, fontWeight: 500 }}>{row.player}</span>
               </div>
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--purple)' }}>{row.value} wkts</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--purple)' }}>{row.wickets ?? row.value} wkts</span>
             </div>
           ))}
         </StatCard>
