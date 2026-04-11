@@ -2,6 +2,7 @@ import { getDB } from '@/lib/db';
 import { calculateScore } from '@/lib/scoring';
 import LiveStats from '@/components/LiveStats';
 import PicksTable from '@/components/PicksTable';
+import Collapsible from '@/components/Collapsible';
 
 export const revalidate = 0;
 
@@ -142,7 +143,9 @@ export default async function Leaderboard() {
             ))}
           </div>
         </div>
-      <PicksTable entries={entries} />
+      <Collapsible title="🧑‍🤝‍🧑 Everyone's Picks">
+        <PicksTable entries={entries} />
+      </Collapsible>
       </div>
 
       {/* RIGHT: Live Tournament Stats */}

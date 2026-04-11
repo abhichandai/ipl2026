@@ -39,11 +39,7 @@ export default function PicksTable({ entries }: { entries: Picks[] }) {
   if (withPicks.length === 0) return null;
 
   return (
-    <div style={{ marginTop: 24 }}>
-      <h3 style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 16, margin: '0 0 12px' }}>
-        📋 Everyone's Picks
-      </h3>
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${withPicks.length}, 1fr)`, gap: 10 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${withPicks.length}, 1fr)`, gap: 10 }}>
         {withPicks.map(e => (
           <div key={e.name} className="card" style={{ padding: '14px 16px', minWidth: 0 }}>
             <p style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 15, margin: '0 0 10px', color: 'var(--accent)' }}>
@@ -79,7 +75,6 @@ export default function PicksTable({ entries }: { entries: Picks[] }) {
             </Row>
           </div>
         ))}
-      </div>
     </div>
   );
 }
