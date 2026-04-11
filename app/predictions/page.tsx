@@ -114,13 +114,13 @@ export default function PredictionsPage() {
         <Section color="var(--accent)" title="🟠 Orange Cap — Pick 3 Batters">
           <Select label="1st Pick" hint="7 pts if #1 · 3 pts if Top 3 · 1 pt if Top 10" value={picks.orange_cap_1} onChange={(v: string) => set('orange_cap_1', v)} options={batters} />
           <Select label="2nd Pick" value={picks.orange_cap_2} onChange={(v: string) => set('orange_cap_2', v)} options={batters} />
-          <Select label="3rd Pick" value={picks.orange_cap_3} onChange={(v: string) => set('orange_cap_3', v)} options={batters} />
+          <Select label="3rd Pick 🎲 Dark Horse" value={picks.orange_cap_3} onChange={(v: string) => set('orange_cap_3', v)} options={batters} />
         </Section>
 
         <Section color="var(--purple)" title="🟣 Purple Cap — Pick 3 Bowlers">
           <Select label="1st Pick" hint="7 pts if #1 · 3 pts if Top 3 · 1 pt if Top 10" value={picks.purple_cap_1} onChange={(v: string) => set('purple_cap_1', v)} options={bowlers} />
           <Select label="2nd Pick" value={picks.purple_cap_2} onChange={(v: string) => set('purple_cap_2', v)} options={bowlers} />
-          <Select label="3rd Pick" value={picks.purple_cap_3} onChange={(v: string) => set('purple_cap_3', v)} options={bowlers} />
+          <Select label="3rd Pick 🎲 Dark Horse" value={picks.purple_cap_3} onChange={(v: string) => set('purple_cap_3', v)} options={bowlers} />
         </Section>
 
         <Section color="var(--accent2)" title="🏅 Top 4 Teams — 3 pts each correct pick">
