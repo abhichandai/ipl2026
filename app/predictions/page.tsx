@@ -4,8 +4,9 @@ import { useRouter } from 'next/navigation';
 
 const IPL_TEAMS = ['RCB', 'CSK', 'MI', 'KKR', 'SRH', 'RR', 'PBKS', 'DC', 'GT', 'LSG'];
 
-const TOP_BATTERS = ['V Kohli','RG Sharma','Shubman Gill','YBK Jaiswal','KL Rahul','SA Yadav','B Sai Sudharsan','SS Iyer','MR Marsh','JC Buttler','N Pooran','Prabhsimran Singh','DP Conway','RD Gaikwad'];
-const TOP_BOWLERS = ['JJ Bumrah','M Prasidh Krishna','Arshdeep Singh','Kuldeep Yadav','JR Hazlewood','R Sai Kishore','Noor Ahmad','TA Boult','Mohammed Siraj','CV Varun','KH Pandya','B Kumar','HH Pandya','YS Chahal'];
+// Fallback static lists if API is unavailable
+const FALLBACK_BATTERS = ['V Kohli','RG Sharma','Shubman Gill','YBK Jaiswal','KL Rahul','SA Yadav','B Sai Sudharsan','SS Iyer','MR Marsh','JC Buttler','N Pooran','Prabhsimran Singh','DP Conway','RD Gaikwad','Riyan Parag','Dhruv Jurel'];
+const FALLBACK_BOWLERS = ['JJ Bumrah','M Prasidh Krishna','Arshdeep Singh','Kuldeep Yadav','JR Hazlewood','R Sai Kishore','Noor Ahmad','TA Boult','Mohammed Siraj','CV Varun','KH Pandya','B Kumar','HH Pandya','YS Chahal','Rashid Khan'];
 
 function Select({ label, hint, value, onChange, options }: any) {
   return (
@@ -35,6 +36,9 @@ export default function PredictionsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [locked, setLocked] = useState(false);
+  const [batters, setBatters] = useState<string[]>(FALLBACK_BATTERS);
+  const [bowlers, setBowlers] = useState<string[]>(FALLBACK_BOWLERS);
+  const [playerListSource, setPlayerListSource] = useState<'live' | 'fallback'>('fallback');
   const [picks, setPicks] = useState({
     orange_cap_1:'', orange_cap_2:'', orange_cap_3:'',
     purple_cap_1:'', purple_cap_2:'', purple_cap_3:'',
@@ -44,10 +48,23 @@ export default function PredictionsPage() {
 
   useEffect(() => {
     fetch('/api/me').then(r => r.json()).then(d => { if (!d.user) router.push('/login'); });
+
+    // Load existing predictions
     fetch('/api/predictions').then(r => r.json()).then(d => {
       if (d.predictions) { setPicks(d.predictions); setLocked(d.predictions.locked); }
       setLoading(false);
     });
+
+    // Load live player lists from CricAPI (cached)
+    fetch('/api/cricket').then(r => r.json()).then(d => {
+      if (d.batters?.length > 5) {
+        setBatters(d.batters.sort());
+        setPlayerListSource('live');
+      }
+      if (d.bowlers?.length > 5) {
+        setBowlers(d.bowlers.sort());
+      }
+    }).catch(() => {}); // silently fall back
   }, []);
 
   function set(key: string, val: string) { setPicks(p => ({ ...p, [key]: val })); setSaved(false); }
@@ -68,7 +85,12 @@ export default function PredictionsPage() {
     <div>
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 32, fontWeight: 800, margin: '0 0 6px' }}>Your Predictions</h1>
-        <p style={{ color: 'var(--text-muted)', margin: 0 }}>Make your picks for IPL 2026</p>
+        <p style={{ color: 'var(--text-muted)', margin: '0 0 4px' }}>Make your picks for IPL 2026</p>
+        {playerListSource === 'live' && (
+          <p style={{ fontSize: 11, color: 'var(--green)', margin: 0 }}>
+            ✓ Player lists loaded live from IPL 2026 squads
+          </p>
+        )}
         {locked && (
           <div style={{ marginTop: 12, background: '#FFF0EA', border: '1px solid var(--accent)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: 'var(--accent)', fontWeight: 600 }}>
             🔒 Predictions are locked for the season
@@ -78,15 +100,15 @@ export default function PredictionsPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <Section color="var(--accent)" title="🟠 Orange Cap — Pick 3 Batters">
-          <Select label="1st Pick" hint="7 pts if #1 • 3 pts if Top 3 • 1 pt if Top 10" value={picks.orange_cap_1} onChange={(v: string) => set('orange_cap_1', v)} options={TOP_BATTERS} />
-          <Select label="2nd Pick" value={picks.orange_cap_2} onChange={(v: string) => set('orange_cap_2', v)} options={TOP_BATTERS} />
-          <Select label="3rd Pick" value={picks.orange_cap_3} onChange={(v: string) => set('orange_cap_3', v)} options={TOP_BATTERS} />
+          <Select label="1st Pick" hint="7 pts if #1 · 3 pts if Top 3 · 1 pt if Top 10" value={picks.orange_cap_1} onChange={(v: string) => set('orange_cap_1', v)} options={batters} />
+          <Select label="2nd Pick" value={picks.orange_cap_2} onChange={(v: string) => set('orange_cap_2', v)} options={batters} />
+          <Select label="3rd Pick" value={picks.orange_cap_3} onChange={(v: string) => set('orange_cap_3', v)} options={batters} />
         </Section>
 
         <Section color="var(--purple)" title="🟣 Purple Cap — Pick 3 Bowlers">
-          <Select label="1st Pick" hint="7 pts if #1 • 3 pts if Top 3 • 1 pt if Top 10" value={picks.purple_cap_1} onChange={(v: string) => set('purple_cap_1', v)} options={TOP_BOWLERS} />
-          <Select label="2nd Pick" value={picks.purple_cap_2} onChange={(v: string) => set('purple_cap_2', v)} options={TOP_BOWLERS} />
-          <Select label="3rd Pick" value={picks.purple_cap_3} onChange={(v: string) => set('purple_cap_3', v)} options={TOP_BOWLERS} />
+          <Select label="1st Pick" hint="7 pts if #1 · 3 pts if Top 3 · 1 pt if Top 10" value={picks.purple_cap_1} onChange={(v: string) => set('purple_cap_1', v)} options={bowlers} />
+          <Select label="2nd Pick" value={picks.purple_cap_2} onChange={(v: string) => set('purple_cap_2', v)} options={bowlers} />
+          <Select label="3rd Pick" value={picks.purple_cap_3} onChange={(v: string) => set('purple_cap_3', v)} options={bowlers} />
         </Section>
 
         <Section color="var(--accent2)" title="🏅 Top 4 Teams — 3 pts each correct pick">
