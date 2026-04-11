@@ -125,8 +125,7 @@ export default async function Leaderboard() {
         )}
 
         {/* Scoring rules */}
-        <div className="card" style={{ padding: '18px 20px' }}>
-          <p style={{ margin: '0 0 12px', fontWeight: 700, fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Scoring Rules</p>
+        <Collapsible title="📋 Scoring Rules">
           <div className="scoring-rules-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}>
             {[
               ['🏆', 'Correct IPL Winner', '10 pts'],
@@ -134,7 +133,6 @@ export default async function Leaderboard() {
               ['🟠🟣', 'Cap holder #1', '7 pts'],
               ['🟠🟣', 'Cap Top 3', '3 pts'],
               ['🟠🟣', 'Cap Top 10', '1 pt'],
-              // ['🎮', 'Each correct game', '1 pt'],
             ].map(([icon, label, pts]) => (
               <div key={String(label)} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
                 <span style={{ color: 'var(--text-muted)' }}>{icon} {label}</span>
@@ -142,10 +140,11 @@ export default async function Leaderboard() {
               </div>
             ))}
           </div>
-        </div>
-      <Collapsible title="🧑‍🤝‍🧑 Everyone's Picks">
-        <PicksTable entries={entries} />
-      </Collapsible>
+        </Collapsible>
+        <div style={{ marginTop: 10 }} />
+        <Collapsible title="🧑‍🤝‍🧑 Everyone's Picks">
+          <PicksTable entries={entries} />
+        </Collapsible>
       </div>
 
       {/* RIGHT: Live Tournament Stats */}
