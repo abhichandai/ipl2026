@@ -43,13 +43,13 @@ export default function PicksTable({ entries }: { entries: Picks[] }) {
       display: 'flex',
       gap: 12,
       overflowX: 'auto',
+      marginLeft: -20,
+      marginRight: -20,
+      paddingLeft: 20,
+      paddingRight: 20,
       WebkitOverflowScrolling: 'touch',
       scrollSnapType: 'x mandatory',
       paddingBottom: 8,
-      marginLeft: -4,
-      marginRight: -4,
-      paddingLeft: 4,
-      paddingRight: 4,
     }}>
         {withPicks.map(e => (
           <div key={e.name} className="card" style={{ padding: '14px 16px', minWidth: 220, maxWidth: 240, flex: '0 0 220px', scrollSnapAlign: 'start' }}>

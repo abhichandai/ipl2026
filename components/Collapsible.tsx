@@ -31,7 +31,7 @@ export default function Collapsible({
         }}>▼</span>
       </button>
       {open && (
-        <div style={{ padding: '0 20px 20px' }}>
+        <div style={{ padding: '0 20px 20px', overflow: 'hidden' }}>
           {children}
         </div>
       )}
