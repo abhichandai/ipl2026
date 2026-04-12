@@ -7,13 +7,11 @@ export const maxDuration = 60;
 
 async function ensureTable() {
   const db = getDB();
-  await db`
-    CREATE TABLE IF NOT EXISTS cricket_cache (
-      id SERIAL PRIMARY KEY,
-      data JSONB NOT NULL,
-      updated_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `;
+  await db`CREATE TABLE IF NOT EXISTS cricket_cache (
+    id SERIAL PRIMARY KEY,
+    data JSONB NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+  )`;
 }
 
 async function doRefresh() {
@@ -41,13 +39,13 @@ export async function GET(req: NextRequest) {
     const db = getDB();
     const rows = await db`SELECT data, updated_at FROM cricket_cache ORDER BY id DESC LIMIT 1`;
 
-    // Force refresh from admin
+    // Admin force refresh — do it synchronously and return fresh
     if (forceRefresh && isAdmin) {
       const stats = await doRefresh();
       return NextResponse.json({ ...stats, fromCache: false });
     }
 
-    // No cache yet — fetch fresh
+    // No cache — fetch fresh synchronously (first run)
     if (rows.length === 0) {
       const stats = await doRefresh();
       return NextResponse.json({ ...stats, fromCache: false });
@@ -55,28 +53,17 @@ export async function GET(req: NextRequest) {
 
     const stale = isCacheStale(rows[0].updated_at.toISOString());
 
-    // Cache is stale — refresh now (lazy auto-refresh)
+    // Cache is stale — return stale data immediately, refresh in background
     if (stale) {
-      try {
-        const stats = await doRefresh();
-        return NextResponse.json({ ...stats, fromCache: false, wasStale: true });
-      } catch (refreshErr: any) {
-        // Refresh failed — return stale cache rather than error
-        return NextResponse.json({
-          ...rows[0].data,
-          updatedAt: rows[0].updated_at,
-          stale: true,
-          fromCache: true,
-          error: refreshErr.message,
-        });
-      }
+      // Fire-and-forget background refresh (won't block the response)
+      doRefresh().catch(() => {});
     }
 
-    // Cache is fresh — return it
+    // Return whatever we have (stale or fresh)
     return NextResponse.json({
       ...rows[0].data,
       updatedAt: rows[0].updated_at,
-      stale: false,
+      stale,
       fromCache: true,
     });
 
