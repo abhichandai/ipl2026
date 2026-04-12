@@ -39,9 +39,20 @@ export default function PicksTable({ entries }: { entries: Picks[] }) {
   if (withPicks.length === 0) return null;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${withPicks.length}, 1fr)`, gap: 10 }}>
+    <div style={{
+      display: 'flex',
+      gap: 12,
+      overflowX: 'auto',
+      WebkitOverflowScrolling: 'touch',
+      scrollSnapType: 'x mandatory',
+      paddingBottom: 8,
+      marginLeft: -4,
+      marginRight: -4,
+      paddingLeft: 4,
+      paddingRight: 4,
+    }}>
         {withPicks.map(e => (
-          <div key={e.name} className="card" style={{ padding: '14px 16px', minWidth: 0 }}>
+          <div key={e.name} className="card" style={{ padding: '14px 16px', minWidth: 220, maxWidth: 240, flex: '0 0 220px', scrollSnapAlign: 'start' }}>
             <p style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 15, margin: '0 0 10px', color: 'var(--accent)' }}>
               {e.name}
             </p>
