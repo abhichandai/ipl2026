@@ -13,7 +13,7 @@ export default function Collapsible({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="card" style={{ overflow: 'hidden' }}>
+    <div className="card" style={{ overflowX: 'clip', overflowY: 'visible' }}>
       <button
         onClick={() => setOpen(o => !o)}
         style={{
@@ -31,7 +31,7 @@ export default function Collapsible({
         }}>▼</span>
       </button>
       {open && (
-        <div style={{ padding: '0 20px 20px', overflow: 'hidden' }}>
+        <div style={{ paddingBottom: 20 }}>
           {children}
         </div>
       )}

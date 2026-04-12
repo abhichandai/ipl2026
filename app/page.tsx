@@ -126,6 +126,7 @@ export default async function Leaderboard() {
 
         {/* Scoring rules */}
         <Collapsible title="📋 Scoring Rules">
+          <div style={{ padding: '0 20px' }}>
           <div className="scoring-rules-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px' }}>
             {[
               ['🏆', 'Correct IPL Winner', '10 pts'],
@@ -139,6 +140,7 @@ export default async function Leaderboard() {
                 <span style={{ fontWeight: 700, color: 'var(--accent)' }}>{pts}</span>
               </div>
             ))}
+          </div>
           </div>
         </Collapsible>
         <div style={{ marginTop: 10 }} />
