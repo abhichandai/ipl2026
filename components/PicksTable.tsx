@@ -17,21 +17,16 @@ const TEAM_COLORS: Record<string, string> = {
 function TeamBadge({ name }: { name: string }) {
   if (!name) return <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>;
   const color = TEAM_COLORS[name] || '#888';
-  return <span style={{ background: color, color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4 }}>{name}</span>;
+  return <span style={{ background: color, color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, whiteSpace: 'nowrap', display: 'inline-block' }}>{name}</span>;
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-      <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, minWidth: 80, paddingTop: 2 }}>{label}</span>
-      <div style={{ flex: 1 }}>{children}</div>
+      <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, minWidth: 60, paddingTop: 2, flexShrink: 0 }}>{label}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
     </div>
   );
-}
-
-function PlayerPick({ name }: { name: string }) {
-  if (!name) return <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>;
-  return <span style={{ fontSize: 12, fontWeight: 500 }}>{name}</span>;
 }
 
 export default function PicksTable({ entries }: { entries: Picks[] }) {
@@ -39,51 +34,51 @@ export default function PicksTable({ entries }: { entries: Picks[] }) {
   if (withPicks.length === 0) return null;
 
   return (
-    <div style={{
-      display: 'flex',
-      gap: 12,
-      overflowX: 'auto',
-      WebkitOverflowScrolling: 'touch',
-      scrollSnapType: 'x mandatory',
-      paddingBottom: 12,
-      paddingLeft: 20,
-      paddingRight: 20,
-    }}>
+    <>
+      <style>{`
+        .picks-grid {
+          display: grid;
+          grid-template-columns: repeat(${withPicks.length}, 1fr);
+          gap: 10px;
+        }
+        @media (max-width: 600px) {
+          .picks-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+        }
+      `}</style>
+      <div className="picks-grid">
         {withPicks.map(e => (
-          <div key={e.name} className="card" style={{ padding: '14px 16px', minWidth: 220, maxWidth: 240, flex: '0 0 220px', scrollSnapAlign: 'start' }}>
+          <div key={e.name} className="card" style={{ padding: '14px 16px' }}>
             <p style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 15, margin: '0 0 10px', color: 'var(--accent)' }}>
               {e.name}
             </p>
-
             <Row label="🏆 Winner">
               <TeamBadge name={e.ipl_winner} />
             </Row>
-
             <Row label="🏅 Top 4">
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                {[e.top4_team_1, e.top4_team_2, e.top4_team_3, e.top4_team_4].map((t, i) => (
-                  <TeamBadge key={i} name={t} />
-                ))}
+                {[e.top4_team_1, e.top4_team_2, e.top4_team_3, e.top4_team_4].map((t, i) => <TeamBadge key={i} name={t} />)}
               </div>
             </Row>
-
             <Row label="🟠 Orange">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <PlayerPick name={e.orange_cap_1} />
-                <PlayerPick name={e.orange_cap_2} />
-                <span style={{ fontSize: 10, color: 'var(--accent)', fontStyle: 'italic' }}>🎲 {e.orange_cap_3 || '—'}</span>
+                <span style={{ fontSize: 12, fontWeight: 500 }}>{e.orange_cap_1 || '—'}</span>
+                <span style={{ fontSize: 12, fontWeight: 500 }}>{e.orange_cap_2 || '—'}</span>
+                <span style={{ fontSize: 11, color: 'var(--accent)', fontStyle: 'italic' }}>🎲 {e.orange_cap_3 || '—'}</span>
               </div>
             </Row>
-
             <Row label="🟣 Purple">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <PlayerPick name={e.purple_cap_1} />
-                <PlayerPick name={e.purple_cap_2} />
-                <span style={{ fontSize: 10, color: 'var(--purple)', fontStyle: 'italic' }}>🎲 {e.purple_cap_3 || '—'}</span>
+                <span style={{ fontSize: 12, fontWeight: 500 }}>{e.purple_cap_1 || '—'}</span>
+                <span style={{ fontSize: 12, fontWeight: 500 }}>{e.purple_cap_2 || '—'}</span>
+                <span style={{ fontSize: 11, color: 'var(--purple)', fontStyle: 'italic' }}>🎲 {e.purple_cap_3 || '—'}</span>
               </div>
             </Row>
           </div>
         ))}
-    </div>
+      </div>
+    </>
   );
 }
