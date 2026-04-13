@@ -5,23 +5,23 @@ import { useRouter } from 'next/navigation';
 const IPL_TEAMS = ['RCB', 'CSK', 'MI', 'KKR', 'SRH', 'RR', 'PBKS', 'DC', 'GT', 'LSG'];
 
 // Fallback static lists if API is unavailable
-// Orange Cap top 30 as of Apr 12 2026
+// Updated Apr 13 2026 — exact names match ESPNcricinfo scraper output
 const FALLBACK_BATTERS = [
-  'V Sooryavanshi','RM Patidar','H Klaasen','YBK Jaiswal','V Kohli',
-  'DC Jurel','JC Buttler','Sameer Rizvi','Shubman Gill','A Raghuvanshi',
-  'SS Iyer','RG Sharma','KL Rahul','SA Yadav','B Sai Sudharsan',
-  'MR Marsh','N Pooran','Prabhsimran Singh','RD Gaikwad','Riyan Parag',
-  'Dhruv Jurel','Devdutt Padikkal','Ryan Rickelton','Ishan Kishan','Rishabh Pant',
-  'Travis Head','Abhishek Sharma','Phil Salt','Ayush Mhatre','Faf du Plessis',
+  'H Klaasen','Ishan Kishan','V Sooryavanshi','RM Patidar','YBK Jaiswal',
+  'V Kohli','DC Jurel','JC Buttler','Sameer Rizvi','Shubman Gill',
+  'A Raghuvanshi','SS Iyer','SV Samson','RG Sharma','RD Rickelton',
+  'TH David','A Mhatre','PD Salt','Prabhsimran Singh','Abhishek Sharma',
+  'P Nissanka','D Padikkal','K Nitish Kumar Reddy','AM Rahane','TM Head',
+  'CPL Connolly','B Sai Sudharsan','KL Rahul','T Stubbs','AK Markram',
 ];
-// Purple Cap top 30 as of Apr 12 2026
+// Updated Apr 13 2026 — exact names match ESPNcricinfo scraper output
 const FALLBACK_BOWLERS = [
-  'M Prasidh Krishna','Ravi Bishnoi','Anshul Kamboj','Prince Yadav','Jacob Duffy',
-  'Rashid Khan','L Ngidi','Jofra Archer','HS Dubey','N Burger',
-  'JJ Bumrah','Arshdeep Singh','Kuldeep Yadav','JR Hazlewood','Mohammed Siraj',
-  'T Natarajan','Vijaykumar Vyshak','CV Varun','YS Chahal','HH Pandya',
-  'Mohammed Shami','Bhuvneshwar Kumar','Blessing Muzarabani','R Sai Kishore','Shardul Thakur',
-  'TA Boult','B Kumar','Romario Shepherd','Mukesh Kumar','Noor Ahmad',
+  'M Prasidh Krishna','Ravi Bishnoi','A Kamboj','JC Archer','Prince Yadav',
+  'JA Duffy','Rashid Khan','L Ngidi','HS Dubey','N Burger',
+  'KH Pandya','J Overton','E Malinga','V Vyshak','Sandeep Sharma',
+  'VG Arora','SN Thakur','Sakib Hussain','Mohammed Shami','PP Hinge',
+  'Suyash Sharma','Shivang Kumar','B Kumar','T Natarajan','Mukesh Kumar',
+  'XC Bartlett','Ashok Sharma','B Muzarabani','K Rabada','JD Unadkat',
 ];
 
 function Select({ label, hint, value, onChange, options }: any) {
