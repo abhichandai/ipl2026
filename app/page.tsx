@@ -22,13 +22,22 @@ export default async function Leaderboard() {
     const cached = (cacheRows as any[])[0]?.data;
     if (cached) {
       if (!live.orange_cap_rankings?.length && cached.orangeCap?.length) {
-        live.orange_cap_rankings = cached.orangeCap.map((r: any) => r.player);
+        // Sort by rank field — Haiku may not return array in rank order
+        live.orange_cap_rankings = [...cached.orangeCap]
+          .sort((a: any, b: any) => (a.rank ?? 999) - (b.rank ?? 999))
+          .map((r: any) => r.player);
       }
       if (!live.purple_cap_rankings?.length && cached.purpleCap?.length) {
-        live.purple_cap_rankings = cached.purpleCap.map((r: any) => r.player);
+        live.purple_cap_rankings = [...cached.purpleCap]
+          .sort((a: any, b: any) => (a.rank ?? 999) - (b.rank ?? 999))
+          .map((r: any) => r.player);
       }
       if (!live.top4_teams?.length && cached.pointsTable?.length) {
-        live.top4_teams = cached.pointsTable.slice(0, 4).map((r: any) => r.shortname || r.team);
+        // Sort by points desc so top 4 are actually the top 4
+        live.top4_teams = [...cached.pointsTable]
+          .sort((a: any, b: any) => (b.points ?? 0) - (a.points ?? 0))
+          .slice(0, 4)
+          .map((r: any) => r.shortname || r.team);
       }
     }
 
