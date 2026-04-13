@@ -16,24 +16,24 @@ export default async function Leaderboard() {
       db`SELECT * FROM live_data LIMIT 1`,
       db`SELECT data FROM cricket_cache LIMIT 1`.catch(() => []),
     ]);
+    // cricket_cache is the live scraped source of truth — always prefer it for rankings.
+    // live_data (admin-set) only fills in if cache has nothing.
+    const cached = (cacheRows as any[])[0]?.data;
     if (liveRows[0]) live = liveRows[0];
 
-    // If live_data rankings are empty, pull from cricket_cache
-    const cached = (cacheRows as any[])[0]?.data;
     if (cached) {
-      if (!live.orange_cap_rankings?.length && cached.orangeCap?.length) {
-        // Sort by rank field — Haiku may not return array in rank order
+      // Always override rankings from cricket_cache (real-time scrape wins over admin manual entry)
+      if (cached.orangeCap?.length) {
         live.orange_cap_rankings = [...cached.orangeCap]
           .sort((a: any, b: any) => (a.rank ?? 999) - (b.rank ?? 999))
           .map((r: any) => r.player);
       }
-      if (!live.purple_cap_rankings?.length && cached.purpleCap?.length) {
+      if (cached.purpleCap?.length) {
         live.purple_cap_rankings = [...cached.purpleCap]
           .sort((a: any, b: any) => (a.rank ?? 999) - (b.rank ?? 999))
           .map((r: any) => r.player);
       }
-      if (!live.top4_teams?.length && cached.pointsTable?.length) {
-        // Sort by points desc so top 4 are actually the top 4
+      if (cached.pointsTable?.length) {
         live.top4_teams = [...cached.pointsTable]
           .sort((a: any, b: any) => (b.points ?? 0) - (a.points ?? 0))
           .slice(0, 4)
