@@ -1,6 +1,6 @@
 const CRICAPI_KEY = process.env.CRICAPI_KEY!;
 const BASE = 'https://api.cricapi.com/v1';
-const CACHE_HOURS = 3;
+const CACHE_HOURS = 1;
 
 async function fetchAPI(endpoint: string, params: Record<string, string> = {}) {
   const qs = new URLSearchParams({ apikey: CRICAPI_KEY, ...params });

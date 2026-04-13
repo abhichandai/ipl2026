@@ -34,8 +34,23 @@ export interface ScoreBreakdown {
   };
 }
 
+// Normalize a player name to "INITIAL LASTNAME" for fuzzy matching
+// e.g. "Anshul Kamboj" → "a kamboj", "A Kamboj" → "a kamboj"
+function normalizeName(name: string): string {
+  const parts = name.trim().toLowerCase().split(/\s+/);
+  if (parts.length < 2) return name.toLowerCase();
+  const last = parts[parts.length - 1];
+  const first = parts[0]; // could be "a" or "anshul" — just take first char
+  return `${first[0]} ${last}`;
+}
+
+function nameMatches(a: string, b: string): boolean {
+  if (a.toLowerCase() === b.toLowerCase()) return true;
+  return normalizeName(a) === normalizeName(b);
+}
+
 function getCapPoints(player: string, rankings: string[]): { rank: number | null; pts: number } {
-  const idx = rankings.findIndex(r => r.toLowerCase() === player.toLowerCase());
+  const idx = rankings.findIndex(r => nameMatches(r, player));
   if (idx === -1) return { rank: null, pts: 0 };
   const rank = idx + 1;
   if (rank === 1) return { rank, pts: 7 };
