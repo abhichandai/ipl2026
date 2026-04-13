@@ -39,10 +39,10 @@ export async function GET(req: NextRequest) {
     const db = getDB();
     const rows = await db`SELECT data, updated_at FROM cricket_cache ORDER BY id DESC LIMIT 1`;
 
-    // Admin force refresh — do it synchronously and return fresh
+    // Admin force refresh — fire and forget, return immediately
     if (forceRefresh && isAdmin) {
-      const stats = await doRefresh();
-      return NextResponse.json({ ...stats, fromCache: false });
+      doRefresh().catch(() => {});
+      return NextResponse.json({ success: true, message: 'Refresh started — check back in 30 seconds' });
     }
 
     // No cache — fetch fresh synchronously (first run)

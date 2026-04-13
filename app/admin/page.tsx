@@ -94,8 +94,14 @@ export default function AdminPage() {
     const res = await fetch('/api/cricket?refresh=1&key=ipl2026');
     const d = await res.json();
     setRefreshing(false);
-    setRefreshMsg(d.error ? '❌ ' + d.error : '✅ Stats refreshed!');
-    setTimeout(() => setRefreshMsg(''), 4000);
+    if (d.error) {
+      setRefreshMsg('❌ ' + d.error);
+      setTimeout(() => setRefreshMsg(''), 5000);
+    } else {
+      setRefreshMsg('⏳ Refresh running in background — stats will update in ~30 seconds');
+      setTimeout(() => setRefreshMsg('✅ Done! Reload the leaderboard to see fresh stats.'), 30000);
+      setTimeout(() => setRefreshMsg(''), 40000);
+    }
   }
 
   if (loading) return <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>Loading...</div>;
