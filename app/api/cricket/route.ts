@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { waitUntil } from '@vercel/functions';
 import { getDB } from '@/lib/db';
 import { scrapeIPLStats } from '@/lib/scrape';
 import { isCacheStale } from '@/lib/cricket';
@@ -39,13 +40,13 @@ export async function GET(req: NextRequest) {
     const db = getDB();
     const rows = await db`SELECT data, updated_at FROM cricket_cache ORDER BY id DESC LIMIT 1`;
 
-    // Admin force refresh — fire and forget, return immediately
+    // Admin force refresh — respond immediately, refresh in background via waitUntil
     if (forceRefresh && isAdmin) {
-      doRefresh().catch(() => {});
+      waitUntil(doRefresh().catch(console.error));
       return NextResponse.json({ success: true, message: 'Refresh started — check back in 30 seconds' });
     }
 
-    // No cache — fetch fresh synchronously (first run)
+    // No cache — fetch fresh synchronously (first run only)
     if (rows.length === 0) {
       const stats = await doRefresh();
       return NextResponse.json({ ...stats, fromCache: false });
@@ -53,13 +54,11 @@ export async function GET(req: NextRequest) {
 
     const stale = isCacheStale(rows[0].updated_at.toISOString());
 
-    // Cache is stale — return stale data immediately, refresh in background
+    // Cache is stale — return immediately, refresh in background via waitUntil
     if (stale) {
-      // Fire-and-forget background refresh (won't block the response)
-      doRefresh().catch(() => {});
+      waitUntil(doRefresh().catch(console.error));
     }
 
-    // Return whatever we have (stale or fresh)
     return NextResponse.json({
       ...rows[0].data,
       updatedAt: rows[0].updated_at,

@@ -5,19 +5,23 @@ import { useRouter } from 'next/navigation';
 const IPL_TEAMS = ['RCB', 'CSK', 'MI', 'KKR', 'SRH', 'RR', 'PBKS', 'DC', 'GT', 'LSG'];
 
 // Fallback static lists if API is unavailable
-// Orange Cap top 10 as of Apr 11 2026, then other key picks
+// Orange Cap top 30 as of Apr 12 2026
 const FALLBACK_BATTERS = [
-  'V Sooryavanshi','YBK Jaiswal','H Klaasen','DC Jurel','Sameer Rizvi',
-  'V Kohli','RG Sharma','Shubman Gill','KL Rahul','SA Yadav',
-  'B Sai Sudharsan','SS Iyer','MR Marsh','JC Buttler','N Pooran',
-  'Prabhsimran Singh','RD Gaikwad','Riyan Parag','Devdutt Padikkal','Ryan Rickelton',
+  'V Sooryavanshi','RM Patidar','H Klaasen','YBK Jaiswal','V Kohli',
+  'DC Jurel','JC Buttler','Sameer Rizvi','Shubman Gill','A Raghuvanshi',
+  'SS Iyer','RG Sharma','KL Rahul','SA Yadav','B Sai Sudharsan',
+  'MR Marsh','N Pooran','Prabhsimran Singh','RD Gaikwad','Riyan Parag',
+  'Dhruv Jurel','Devdutt Padikkal','Ryan Rickelton','Ishan Kishan','Rishabh Pant',
+  'Travis Head','Abhishek Sharma','Phil Salt','Ayush Mhatre','Faf du Plessis',
 ];
-// Purple Cap top 10 as of Apr 11 2026, then other key picks
+// Purple Cap top 30 as of Apr 12 2026
 const FALLBACK_BOWLERS = [
-  'Ravi Bishnoi','M Prasidh Krishna','Rashid Khan','L Ngidi','Anshul Kamboj',
-  'Jacob Duffy','Vijaykumar Vyshak','Nandre Burger','Jofra Archer','T Natarajan',
+  'M Prasidh Krishna','Ravi Bishnoi','Anshul Kamboj','Prince Yadav','Jacob Duffy',
+  'Rashid Khan','L Ngidi','Jofra Archer','HS Dubey','N Burger',
   'JJ Bumrah','Arshdeep Singh','Kuldeep Yadav','JR Hazlewood','Mohammed Siraj',
-  'TA Boult','YS Chahal','CV Varun','B Kumar','HH Pandya',
+  'T Natarajan','Vijaykumar Vyshak','CV Varun','YS Chahal','HH Pandya',
+  'Mohammed Shami','Bhuvneshwar Kumar','Blessing Muzarabani','R Sai Kishore','Shardul Thakur',
+  'TA Boult','B Kumar','Romario Shepherd','Mukesh Kumar','Noor Ahmad',
 ];
 
 function Select({ label, hint, value, onChange, options }: any) {
