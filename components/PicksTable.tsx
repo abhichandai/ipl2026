@@ -38,14 +38,8 @@ export default function PicksTable({ entries }: { entries: Picks[] }) {
       <style>{`
         .picks-grid {
           display: grid;
-          grid-template-columns: repeat(${withPicks.length}, 1fr);
+          grid-template-columns: 1fr;
           gap: 10px;
-        }
-        @media (max-width: 600px) {
-          .picks-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-          }
         }
       `}</style>
       <div className="picks-grid">
