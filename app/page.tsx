@@ -12,34 +12,13 @@ export default async function Leaderboard() {
 
   try {
     const db = getDB();
-    const [liveRows, cacheRows] = await Promise.all([
+    const [liveRows] = await Promise.all([
       db`SELECT * FROM live_data LIMIT 1`,
-      db`SELECT data FROM cricket_cache LIMIT 1`.catch(() => []),
     ]);
-    // cricket_cache is the live scraped source of truth — always prefer it for rankings.
-    // live_data (admin-set) only fills in if cache has nothing.
-    const cached = (cacheRows as any[])[0]?.data;
+    // live_data is the single source of truth for scoring.
+    // It is kept in sync automatically by doRefresh() in /api/cricket.
+    // Admins can also override it manually via the Live Standings tab.
     if (liveRows[0]) live = liveRows[0];
-
-    if (cached) {
-      // Always override rankings from cricket_cache (real-time scrape wins over admin manual entry)
-      if (cached.orangeCap?.length) {
-        live.orange_cap_rankings = [...cached.orangeCap]
-          .sort((a: any, b: any) => (a.rank ?? 999) - (b.rank ?? 999))
-          .map((r: any) => r.player);
-      }
-      if (cached.purpleCap?.length) {
-        live.purple_cap_rankings = [...cached.purpleCap]
-          .sort((a: any, b: any) => (a.rank ?? 999) - (b.rank ?? 999))
-          .map((r: any) => r.player);
-      }
-      if (cached.pointsTable?.length) {
-        live.top4_teams = [...cached.pointsTable]
-          .sort((a: any, b: any) => (b.points ?? 0) - (a.points ?? 0))
-          .slice(0, 4)
-          .map((r: any) => r.shortname || r.team);
-      }
-    }
 
     const users = await db`
       SELECT u.id, u.display_name, p.*,

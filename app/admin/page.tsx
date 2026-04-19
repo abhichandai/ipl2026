@@ -93,15 +93,33 @@ export default function AdminPage() {
     setRefreshing(true); setRefreshMsg('');
     const res = await fetch('/api/cricket?refresh=1&key=ipl2026');
     const d = await res.json();
-    setRefreshing(false);
     if (d.error) {
+      setRefreshing(false);
       setRefreshMsg('❌ ' + d.error);
       setTimeout(() => setRefreshMsg(''), 5000);
-    } else {
-      setRefreshMsg('⏳ Refresh running in background — stats will update in ~30 seconds');
-      setTimeout(() => setRefreshMsg('✅ Done! Reload the leaderboard to see fresh stats.'), 30000);
-      setTimeout(() => setRefreshMsg(''), 40000);
+      return;
     }
+    // Background refresh started — poll /api/cricket until updatedAt changes
+    setRefreshMsg('⏳ Scraping ESPNcricinfo — checking for updates...');
+    const startedAt = Date.now();
+    const poll = setInterval(async () => {
+      try {
+        const r = await fetch('/api/cricket');
+        const data = await r.json();
+        const age = Date.now() - new Date(data.updatedAt).getTime();
+        if (age < 90_000) { // updated within last 90s → refresh done
+          clearInterval(poll);
+          setRefreshing(false);
+          setRefreshMsg('✅ Stats updated! Reload the leaderboard to see fresh scores.');
+          setTimeout(() => setRefreshMsg(''), 8000);
+        } else if (Date.now() - startedAt > 90_000) { // 90s timeout
+          clearInterval(poll);
+          setRefreshing(false);
+          setRefreshMsg('⚠️ Took too long — check /api/cricket or try again.');
+          setTimeout(() => setRefreshMsg(''), 8000);
+        }
+      } catch {/* keep polling */}
+    }, 5000);
   }
 
   if (loading) return <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>Loading...</div>;

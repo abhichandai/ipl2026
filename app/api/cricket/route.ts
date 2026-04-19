@@ -15,16 +15,52 @@ async function ensureTable() {
   )`;
 }
 
+let refreshInFlight = false;
+
 async function doRefresh() {
+  if (refreshInFlight) return; // prevent concurrent scrapes racing on the same rows
+  refreshInFlight = true;
+  try {
   const db = getDB();
   const stats = await scrapeIPLStats();
+
+  // 1. Update cricket_cache (sidebar display)
   const existing = await db`SELECT id FROM cricket_cache LIMIT 1`;
   if (existing.length > 0) {
     await db`UPDATE cricket_cache SET data = ${JSON.stringify(stats)}, updated_at = NOW() WHERE id = ${existing[0].id}`;
   } else {
     await db`INSERT INTO cricket_cache (data) VALUES (${JSON.stringify(stats)})`;
   }
+
+  // 2. Sync scraped rankings into live_data so scoring uses fresh data immediately.
+  //    We only overwrite rankings — never tournament_winner (admin sets that manually).
+  const orangeRankings = [...(stats.orangeCap || [])]
+    .sort((a: any, b: any) => (a.rank ?? 999) - (b.rank ?? 999))
+    .map((r: any) => r.player);
+  const purpleRankings = [...(stats.purpleCap || [])]
+    .sort((a: any, b: any) => (a.rank ?? 999) - (b.rank ?? 999))
+    .map((r: any) => r.player);
+  const top4Teams = [...(stats.pointsTable || [])]
+    .sort((a: any, b: any) => (b.points ?? 0) - (a.points ?? 0))
+    .slice(0, 4)
+    .map((r: any) => r.shortname || r.team);
+
+  const liveRows = await db`SELECT id FROM live_data LIMIT 1`;
+  if (liveRows.length > 0) {
+    await db`
+      UPDATE live_data SET
+        orange_cap_rankings = ${JSON.stringify(orangeRankings)},
+        purple_cap_rankings = ${JSON.stringify(purpleRankings)},
+        top4_teams          = ${JSON.stringify(top4Teams)},
+        updated_at          = NOW()
+      WHERE id = ${liveRows[0].id}
+    `;
+  }
+
   return stats;
+  } finally {
+    refreshInFlight = false;
+  }
 }
 
 export async function GET(req: NextRequest) {
