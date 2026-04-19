@@ -15,12 +15,7 @@ async function ensureTable() {
   )`;
 }
 
-let refreshInFlight = false;
-
 async function doRefresh() {
-  if (refreshInFlight) return; // prevent concurrent scrapes racing on the same rows
-  refreshInFlight = true;
-  try {
   const db = getDB();
   const stats = await scrapeIPLStats();
 
@@ -58,9 +53,6 @@ async function doRefresh() {
   }
 
   return stats;
-  } finally {
-    refreshInFlight = false;
-  }
 }
 
 export async function GET(req: NextRequest) {
@@ -76,10 +68,17 @@ export async function GET(req: NextRequest) {
     const db = getDB();
     const rows = await db`SELECT data, updated_at FROM cricket_cache ORDER BY id DESC LIMIT 1`;
 
-    // Admin force refresh — respond immediately, refresh in background via waitUntil
+    // Admin force refresh — run synchronously so we know it actually completed.
+    // maxDuration = 60s covers the scrape + Claude extraction time (~20-40s).
     if (forceRefresh && isAdmin) {
-      waitUntil(doRefresh().catch(console.error));
-      return NextResponse.json({ success: true, message: 'Refresh started — check back in 30 seconds' });
+      const stats = await doRefresh();
+      return NextResponse.json({
+        success: true,
+        updatedAt: new Date().toISOString(),
+        orangeCapCount: stats?.orangeCap?.length ?? 0,
+        purpleCapCount: stats?.purpleCap?.length ?? 0,
+        pointsTableCount: stats?.pointsTable?.length ?? 0,
+      });
     }
 
     // No cache — fetch fresh synchronously (first run only)

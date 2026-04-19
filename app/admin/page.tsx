@@ -90,36 +90,23 @@ export default function AdminPage() {
   const [refreshMsg, setRefreshMsg] = useState('');
 
   async function refreshStats() {
-    setRefreshing(true); setRefreshMsg('');
-    const res = await fetch('/api/cricket?refresh=1&key=ipl2026');
-    const d = await res.json();
-    if (d.error) {
-      setRefreshing(false);
-      setRefreshMsg('❌ ' + d.error);
-      setTimeout(() => setRefreshMsg(''), 5000);
-      return;
+    setRefreshing(true);
+    setRefreshMsg('⏳ Scraping ESPNcricinfo… this takes ~30 seconds');
+    try {
+      const res = await fetch('/api/cricket?refresh=1&key=ipl2026');
+      const d = await res.json();
+      if (d.error || !d.success) {
+        setRefreshMsg('❌ ' + (d.error || 'Refresh failed'));
+        setTimeout(() => setRefreshMsg(''), 6000);
+      } else {
+        setRefreshMsg(`✅ Done! Got ${d.orangeCapCount} batters, ${d.purpleCapCount} bowlers, ${d.pointsTableCount} teams. Reload the leaderboard.`);
+        setTimeout(() => setRefreshMsg(''), 10000);
+      }
+    } catch (e: any) {
+      setRefreshMsg('❌ Network error: ' + e.message);
+      setTimeout(() => setRefreshMsg(''), 6000);
     }
-    // Background refresh started — poll /api/cricket until updatedAt changes
-    setRefreshMsg('⏳ Scraping ESPNcricinfo — checking for updates...');
-    const startedAt = Date.now();
-    const poll = setInterval(async () => {
-      try {
-        const r = await fetch('/api/cricket');
-        const data = await r.json();
-        const age = Date.now() - new Date(data.updatedAt).getTime();
-        if (age < 90_000) { // updated within last 90s → refresh done
-          clearInterval(poll);
-          setRefreshing(false);
-          setRefreshMsg('✅ Stats updated! Reload the leaderboard to see fresh scores.');
-          setTimeout(() => setRefreshMsg(''), 8000);
-        } else if (Date.now() - startedAt > 90_000) { // 90s timeout
-          clearInterval(poll);
-          setRefreshing(false);
-          setRefreshMsg('⚠️ Took too long — check /api/cricket or try again.');
-          setTimeout(() => setRefreshMsg(''), 8000);
-        }
-      } catch {/* keep polling */}
-    }, 5000);
+    setRefreshing(false);
   }
 
   if (loading) return <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>Loading...</div>;
