@@ -209,9 +209,7 @@ export default function AdminPage() {
               {refreshMsg}
             </p>
           )}
-          <p style={{ marginTop: 16, fontSize: 11, color: 'var(--text-muted)' }}>
-            Stats also auto-refresh once every 3 hours when any user visits the leaderboard.
-          </p>
+
         </div>
       )}
 

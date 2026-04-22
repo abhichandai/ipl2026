@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { waitUntil } from '@vercel/functions';
 import { getDB } from '@/lib/db';
 import { scrapeIPLStats } from '@/lib/scrape';
 import { isCacheStale } from '@/lib/cricket';
@@ -88,11 +87,6 @@ export async function GET(req: NextRequest) {
     }
 
     const stale = isCacheStale(rows[0].updated_at.toISOString());
-
-    // Cache is stale — return immediately, refresh in background via waitUntil
-    if (stale) {
-      waitUntil(doRefresh().catch(console.error));
-    }
 
     return NextResponse.json({
       ...rows[0].data,
