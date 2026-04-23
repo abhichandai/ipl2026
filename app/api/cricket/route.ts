@@ -67,17 +67,11 @@ export async function GET(req: NextRequest) {
     const db = getDB();
     const rows = await db`SELECT data, updated_at FROM cricket_cache ORDER BY id DESC LIMIT 1`;
 
-    // Admin force refresh — run synchronously so we know it actually completed.
-    // maxDuration = 60s covers the scrape + Claude extraction time (~20-40s).
+    // Admin force refresh — fire and forget. UI polls for completion via updatedAt.
     if (forceRefresh && isAdmin) {
-      const stats = await doRefresh();
-      return NextResponse.json({
-        success: true,
-        updatedAt: new Date().toISOString(),
-        orangeCapCount: stats?.orangeCap?.length ?? 0,
-        purpleCapCount: stats?.purpleCap?.length ?? 0,
-        pointsTableCount: stats?.pointsTable?.length ?? 0,
-      });
+      const { waitUntil } = await import('@vercel/functions');
+      waitUntil(doRefresh());
+      return NextResponse.json({ started: true, startedAt: new Date().toISOString() });
     }
 
     // No cache — fetch fresh synchronously (first run only)

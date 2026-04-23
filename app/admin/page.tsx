@@ -91,22 +91,42 @@ export default function AdminPage() {
 
   async function refreshStats() {
     setRefreshing(true);
-    setRefreshMsg('⏳ Scraping ESPNcricinfo… this takes ~30 seconds');
+    setRefreshMsg('⏳ Starting scrape…');
+
     try {
-      const res = await fetch('/api/cricket?refresh=1&key=ipl2026');
-      const d = await res.json();
-      if (d.error || !d.success) {
-        setRefreshMsg('❌ ' + (d.error || 'Refresh failed'));
-        setTimeout(() => setRefreshMsg(''), 6000);
-      } else {
-        setRefreshMsg(`✅ Done! Got ${d.orangeCapCount} batters, ${d.purpleCapCount} bowlers, ${d.pointsTableCount} teams. Reload the leaderboard.`);
-        setTimeout(() => setRefreshMsg(''), 10000);
-      }
+      // 1. Capture current updatedAt as baseline
+      const baseline = await fetch('/api/cricket').then(r => r.json());
+      const baselineTs = baseline.updatedAt || null;
+
+      // 2. Fire the refresh — returns instantly
+      await fetch('/api/cricket?refresh=1&key=ipl2026');
+      setRefreshMsg('⏳ Scraping ESPNcricinfo… checking every 3s');
+
+      // 3. Poll until updatedAt changes (max 90s)
+      const start = Date.now();
+      const poll = setInterval(async () => {
+        if (Date.now() - start > 90000) {
+          clearInterval(poll);
+          setRefreshMsg('❌ Timed out after 90s — check Vercel logs');
+          setTimeout(() => setRefreshMsg(''), 8000);
+          setRefreshing(false);
+          return;
+        }
+        const check = await fetch('/api/cricket').then(r => r.json());
+        if (check.updatedAt && check.updatedAt !== baselineTs) {
+          clearInterval(poll);
+          const d = check;
+          setRefreshMsg(`✅ Done! ${d.orangeCap?.length ?? 0} batters, ${d.purpleCap?.length ?? 0} bowlers, ${d.pointsTable?.length ?? 0} teams. Reload the leaderboard.`);
+          setTimeout(() => setRefreshMsg(''), 10000);
+          setRefreshing(false);
+        }
+      }, 3000);
+
     } catch (e: any) {
       setRefreshMsg('❌ Network error: ' + e.message);
       setTimeout(() => setRefreshMsg(''), 6000);
+      setRefreshing(false);
     }
-    setRefreshing(false);
   }
 
   if (loading) return <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>Loading...</div>;
