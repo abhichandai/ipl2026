@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { getDB } from '@/lib/db';
 import { scrapeIPLStats } from '@/lib/scrape';
 import { isCacheStale } from '@/lib/cricket';
@@ -67,10 +67,9 @@ export async function GET(req: NextRequest) {
     const db = getDB();
     const rows = await db`SELECT data, updated_at FROM cricket_cache ORDER BY id DESC LIMIT 1`;
 
-    // Admin force refresh — fire and forget. UI polls for completion via updatedAt.
+    // Admin force refresh — fire and forget via after(). UI polls for completion via updatedAt.
     if (forceRefresh && isAdmin) {
-      const { waitUntil } = await import('@vercel/functions');
-      waitUntil(doRefresh());
+      after(doRefresh());
       return NextResponse.json({ started: true, startedAt: new Date().toISOString() });
     }
 
