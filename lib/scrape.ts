@@ -9,7 +9,7 @@ const URLS = {
 async function fetchPage(url: string): Promise<string> {
   const key = process.env.SCRAPER_API_KEY!;
   const endpoint = `${SCRAPER_URL}?api_key=${key}&url=${encodeURIComponent(url)}&render=false`;
-  const res = await fetch(endpoint, { signal: AbortSignal.timeout(25000) });
+  const res = await fetch(endpoint, { signal: AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`ScraperAPI ${res.status} for ${url}`);
   return res.text();
 }
@@ -27,6 +27,7 @@ async function extractWithClaude(text: string, prompt: string): Promise<any> {
   const apiKey = process.env.ANTHROPIC_API_KEY!;
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
+    signal: AbortSignal.timeout(20000),
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
