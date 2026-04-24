@@ -67,12 +67,22 @@ export async function GET(req: NextRequest) {
     const db = getDB();
     const rows = await db`SELECT data, updated_at FROM cricket_cache ORDER BY id DESC LIMIT 1`;
 
-    // Admin force refresh — fire and forget via after(). UI polls for completion via updatedAt.
+    // Admin force refresh — synchronous await. maxDuration=60 covers the ~35-45s scrape.
+    // The UI will wait for the response before showing Done.
     if (forceRefresh && isAdmin) {
-      after(doRefresh().catch((err: any) => {
+      try {
+        const stats = await doRefresh();
+        return NextResponse.json({
+          success: true,
+          batters: stats.orangeCap?.length ?? 0,
+          bowlers: stats.purpleCap?.length ?? 0,
+          teams: stats.pointsTable?.length ?? 0,
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (err: any) {
         console.error('[doRefresh] FAILED:', err?.message || err);
-      }));
-      return NextResponse.json({ started: true, startedAt: new Date().toISOString() });
+        return NextResponse.json({ error: err.message }, { status: 500 });
+      }
     }
 
     // No cache — fetch fresh synchronously (first run only)

@@ -91,40 +91,22 @@ export default function AdminPage() {
 
   async function refreshStats() {
     setRefreshing(true);
-    setRefreshMsg('⏳ Starting scrape…');
+    setRefreshMsg('⏳ Scraping ESPNcricinfo… this takes ~40s, hang tight');
 
     try {
-      // 1. Capture current updatedAt as baseline
-      const baseline = await fetch('/api/cricket').then(r => r.json());
-      const baselineTs = baseline.updatedAt || null;
+      const res = await fetch('/api/cricket?refresh=1&key=ipl2026');
+      const data = await res.json();
 
-      // 2. Fire the refresh — returns instantly
-      await fetch('/api/cricket?refresh=1&key=ipl2026');
-      setRefreshMsg('⏳ Scraping ESPNcricinfo… checking every 3s');
-
-      // 3. Poll until updatedAt changes (max 90s)
-      const start = Date.now();
-      const poll = setInterval(async () => {
-        if (Date.now() - start > 90000) {
-          clearInterval(poll);
-          setRefreshMsg('❌ Timed out after 90s — check Vercel logs');
-          setTimeout(() => setRefreshMsg(''), 8000);
-          setRefreshing(false);
-          return;
-        }
-        const check = await fetch('/api/cricket').then(r => r.json());
-        if (check.updatedAt && check.updatedAt !== baselineTs) {
-          clearInterval(poll);
-          const d = check;
-          setRefreshMsg(`✅ Done! ${d.orangeCap?.length ?? 0} batters, ${d.purpleCap?.length ?? 0} bowlers, ${d.pointsTable?.length ?? 0} teams. Reload the leaderboard.`);
-          setTimeout(() => setRefreshMsg(''), 10000);
-          setRefreshing(false);
-        }
-      }, 3000);
-
+      if (!res.ok || data.error) {
+        setRefreshMsg('❌ Error: ' + (data.error || res.statusText));
+      } else {
+        setRefreshMsg(`✅ Done! ${data.batters ?? 0} batters, ${data.bowlers ?? 0} bowlers, ${data.teams ?? 0} teams. Reload the leaderboard.`);
+      }
+      setTimeout(() => setRefreshMsg(''), 10000);
     } catch (e: any) {
       setRefreshMsg('❌ Network error: ' + e.message);
       setTimeout(() => setRefreshMsg(''), 6000);
+    } finally {
       setRefreshing(false);
     }
   }
