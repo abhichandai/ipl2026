@@ -69,7 +69,9 @@ export async function GET(req: NextRequest) {
 
     // Admin force refresh — fire and forget via after(). UI polls for completion via updatedAt.
     if (forceRefresh && isAdmin) {
-      after(doRefresh());
+      after(doRefresh().catch((err: any) => {
+        console.error('[doRefresh] FAILED:', err?.message || err);
+      }));
       return NextResponse.json({ started: true, startedAt: new Date().toISOString() });
     }
 
