@@ -50,40 +50,48 @@ async function extractWithClaude(text: string, prompt: string): Promise<any> {
 
   const data = await res.json();
   const raw = data.content?.[0]?.text || '';
-  // Strip any accidental markdown fences
   const clean = raw.replace(/```json|```/g, '').trim();
   return JSON.parse(clean);
 }
 
 export async function scrapeIPLStats() {
-  // Fetch all 3 pages in parallel
-  const [ptHtml, ocHtml, pcHtml] = await Promise.all([
+  // allSettled so one slow/failing page doesn't abort the whole refresh
+  const [ptResult, ocResult, pcResult] = await Promise.allSettled([
     fetchPage(URLS.pointsTable),
     fetchPage(URLS.orangeCap),
     fetchPage(URLS.purpleCap),
   ]);
 
-  // Extract with Claude in parallel
-  const [pointsTable, orangeCap, purpleCap] = await Promise.all([
-    extractWithClaude(
-      stripHTML(ptHtml),
-      `Extract the IPL 2026 points table from this page. Return a JSON array of all 10 teams:
+  const ptHtml = ptResult.status === 'fulfilled' ? ptResult.value : null;
+  const ocHtml = ocResult.status === 'fulfilled' ? ocResult.value : null;
+  const pcHtml = pcResult.status === 'fulfilled' ? pcResult.value : null;
+
+  if (!ptHtml && !ocHtml && !pcHtml) {
+    throw new Error('All 3 ScraperAPI fetches failed');
+  }
+  if (!ptHtml) console.error('[scrape] Points table failed:', (ptResult as PromiseRejectedResult).reason?.message);
+  if (!ocHtml) console.error('[scrape] Orange cap failed:', (ocResult as PromiseRejectedResult).reason?.message);
+  if (!pcHtml) console.error('[scrape] Purple cap failed:', (pcResult as PromiseRejectedResult).reason?.message);
+
+  // Extract only the pages we successfully fetched, in parallel
+  const [ptExtract, ocExtract, pcExtract] = await Promise.allSettled([
+    ptHtml ? extractWithClaude(stripHTML(ptHtml), `Extract the IPL 2026 points table from this page. Return a JSON array of all 10 teams:
 [{"team":"RCB","played":5,"won":3,"lost":2,"points":6,"nrr":"+0.452"}]
-Use short team codes (RCB, CSK, MI, KKR, SRH, RR, PBKS, DC, GT, LSG). Order by points descending.`
-    ),
-    extractWithClaude(
-      stripHTML(ocHtml),
-      `Extract the IPL 2026 Orange Cap top 30 batting standings from this page. The "runs" field must be an INTEGER (e.g. 320), not a string. Return JSON array exactly like this:
+Use short team codes (RCB, CSK, MI, KKR, SRH, RR, PBKS, DC, GT, LSG). Order by points descending.`) : Promise.reject('skipped'),
+    ocHtml ? extractWithClaude(stripHTML(ocHtml), `Extract the IPL 2026 Orange Cap top 30 batting standings from this page. The "runs" field must be an INTEGER (e.g. 320), not a string. Return JSON array exactly like this:
 [{"rank":1,"player":"V Sooryavanshi","team":"RR","runs":215},{"rank":2,"player":"H Klaasen","team":"SRH","runs":198},...]
-Only include players with actual run totals. Do not use placeholder text like "runs" as the value.`
-    ),
-    extractWithClaude(
-      stripHTML(pcHtml),
-      `Extract the IPL 2026 Purple Cap top 30 bowling standings from this page. The "wickets" field must be an INTEGER (e.g. 9), not a string. Return JSON array exactly like this:
+Only include players with actual run totals.`) : Promise.reject('skipped'),
+    pcHtml ? extractWithClaude(stripHTML(pcHtml), `Extract the IPL 2026 Purple Cap top 30 bowling standings from this page. The "wickets" field must be an INTEGER (e.g. 9), not a string. Return JSON array exactly like this:
 [{"rank":1,"player":"Ravi Bishnoi","team":"RR","wickets":9},{"rank":2,"player":"M Prasidh Krishna","team":"GT","wickets":7},...]
-Only include players with actual wicket totals. Do not use placeholder text like "wkts" as the value.`
-    ),
+Only include players with actual wicket totals.`) : Promise.reject('skipped'),
   ]);
 
-  return { pointsTable, orangeCap, purpleCap, updatedAt: new Date().toISOString() };
+  const pointsTable = ptExtract.status === 'fulfilled' ? ptExtract.value : null;
+  const orangeCap   = ocExtract.status === 'fulfilled' ? ocExtract.value : null;
+  const purpleCap   = pcExtract.status === 'fulfilled' ? pcExtract.value : null;
+
+  const partial = !pointsTable || !orangeCap || !purpleCap;
+  if (partial) console.warn('[scrape] Partial result — some pages failed');
+
+  return { pointsTable, orangeCap, purpleCap, updatedAt: new Date().toISOString(), partial };
 }

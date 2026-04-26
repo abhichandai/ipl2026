@@ -26,29 +26,29 @@ async function doRefresh() {
     await db`INSERT INTO cricket_cache (data) VALUES (${JSON.stringify(stats)})`;
   }
 
-  // 2. Sync scraped rankings into live_data so scoring uses fresh data immediately.
-  //    We only overwrite rankings — never tournament_winner (admin sets that manually).
-  const orangeRankings = [...(stats.orangeCap || [])]
-    .sort((a: any, b: any) => (a.rank ?? 999) - (b.rank ?? 999))
-    .map((r: any) => r.player);
-  const purpleRankings = [...(stats.purpleCap || [])]
-    .sort((a: any, b: any) => (a.rank ?? 999) - (b.rank ?? 999))
-    .map((r: any) => r.player);
-  const top4Teams = [...(stats.pointsTable || [])]
-    .sort((a: any, b: any) => (b.points ?? 0) - (a.points ?? 0))
-    .slice(0, 4)
-    .map((r: any) => r.shortname || r.team);
-
+  // 2. Sync scraped rankings into live_data — only overwrite categories that returned data
+  //    Never overwrite tournament_winner (admin sets that manually).
   const liveRows = await db`SELECT id FROM live_data LIMIT 1`;
   if (liveRows.length > 0) {
-    await db`
-      UPDATE live_data SET
-        orange_cap_rankings = ${JSON.stringify(orangeRankings)},
-        purple_cap_rankings = ${JSON.stringify(purpleRankings)},
-        top4_teams          = ${JSON.stringify(top4Teams)},
-        updated_at          = NOW()
-      WHERE id = ${liveRows[0].id}
-    `;
+    if (stats.orangeCap) {
+      const orangeRankings = [...stats.orangeCap]
+        .sort((a: any, b: any) => (a.rank ?? 999) - (b.rank ?? 999))
+        .map((r: any) => r.player);
+      await db`UPDATE live_data SET orange_cap_rankings = ${JSON.stringify(orangeRankings)}, updated_at = NOW() WHERE id = ${liveRows[0].id}`;
+    }
+    if (stats.purpleCap) {
+      const purpleRankings = [...stats.purpleCap]
+        .sort((a: any, b: any) => (a.rank ?? 999) - (b.rank ?? 999))
+        .map((r: any) => r.player);
+      await db`UPDATE live_data SET purple_cap_rankings = ${JSON.stringify(purpleRankings)}, updated_at = NOW() WHERE id = ${liveRows[0].id}`;
+    }
+    if (stats.pointsTable) {
+      const top4Teams = [...stats.pointsTable]
+        .sort((a: any, b: any) => (b.points ?? 0) - (a.points ?? 0))
+        .slice(0, 4)
+        .map((r: any) => r.shortname || r.team);
+      await db`UPDATE live_data SET top4_teams = ${JSON.stringify(top4Teams)}, updated_at = NOW() WHERE id = ${liveRows[0].id}`;
+    }
   }
 
   return stats;
