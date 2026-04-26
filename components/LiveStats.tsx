@@ -61,7 +61,7 @@ export default function LiveStats() {
       {/* Points Table — all 10 teams */}
       {data.pointsTable?.length > 0 && (
         <StatCard title="🏅 Points Table">
-          {data.pointsTable.slice(0, 10).map((row: PointsRow, i: number) => (
+          {(data.pointsTable || []).slice(0, 10).map((row: PointsRow, i: number) => (
             <div key={row.team || i} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '4px 6px', borderRadius: 7, marginBottom: 3,
@@ -88,7 +88,7 @@ export default function LiveStats() {
           {/* Orange Cap */}
           <div className="card" style={{ padding: '14px 14px' }}>
             <p style={{ margin: '0 0 10px', fontWeight: 700, fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>🟠 Orange Cap</p>
-            {data.orangeCap.slice(0, 10).map((row: CapRow, i: number) => (
+            {(data.orangeCap || []).slice(0, 10).map((row: CapRow, i: number) => (
               <div key={row.player || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5, gap: 4 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
                   <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 12, flexShrink: 0 }}>{row.rank ?? i + 1}</span>
@@ -104,7 +104,7 @@ export default function LiveStats() {
           {/* Purple Cap */}
           <div className="card" style={{ padding: '14px 14px' }}>
             <p style={{ margin: '0 0 10px', fontWeight: 700, fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>🟣 Purple Cap</p>
-            {data.purpleCap.slice(0, 10).map((row: CapRow, i: number) => (
+            {(data.purpleCap || []).slice(0, 10).map((row: CapRow, i: number) => (
               <div key={row.player || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5, gap: 4 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
                   <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 12, flexShrink: 0 }}>{row.rank ?? i + 1}</span>
