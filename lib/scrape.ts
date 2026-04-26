@@ -2,7 +2,7 @@ const SCRAPER_URL = 'https://api.scraperapi.com';
 // IPL 2026 series ID on ESPNcricinfo is 17740
 const URLS = {
   pointsTable: 'https://www.espncricinfo.com/series/ipl-2026-1510719/points-table-standings',
-  orangeCap:   'https://www.espncricinfo.com/records/tournament/batting-most-runs-career/indian-premier-league-17740',
+  orangeCap:   'https://www.espncricinfo.com/series/ipl-2026-1510719/orange-cap',
   purpleCap:   'https://www.espncricinfo.com/series/ipl-2026-1510719/purple-cap',
 };
 
