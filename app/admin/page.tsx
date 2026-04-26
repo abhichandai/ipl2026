@@ -88,6 +88,41 @@ export default function AdminPage() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMsg, setRefreshMsg] = useState('');
+  const [screenshots, setScreenshots] = useState<string[]>([]);
+
+  function handleImageFiles(files: File[]) {
+    files.slice(0, 3).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => setScreenshots(prev => [...prev.slice(0, 2), e.target?.result as string]);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function readScreenshots() {
+    if (screenshots.length === 0) return;
+    setRefreshing(true);
+    setRefreshMsg('⏳ Reading screenshots with Claude...');
+    try {
+      const res = await fetch('/api/admin/read-screenshots', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images: screenshots, key: 'ipl2026' }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setRefreshMsg('❌ Error: ' + (data.error || res.statusText));
+      } else {
+        setRefreshMsg(`✅ Done! ${data.batters ?? 0} batters, ${data.bowlers ?? 0} bowlers, ${data.teams ?? 0} teams. Reload the leaderboard.`);
+        setScreenshots([]);
+      }
+      setTimeout(() => setRefreshMsg(''), 10000);
+    } catch (e: any) {
+      setRefreshMsg('❌ Error: ' + e.message);
+      setTimeout(() => setRefreshMsg(''), 6000);
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   async function refreshStats() {
     setRefreshing(true);
@@ -192,26 +227,54 @@ export default function AdminPage() {
       {tab === 'stats' && (
         <div className="card" style={{ padding: '24px' }}>
           <h2 style={{ fontFamily: 'Bricolage Grotesque, sans-serif', fontWeight: 700, fontSize: 18, margin: '0 0 8px' }}>
-            🏏 Live Tournament Stats
+            🏏 Update Tournament Stats
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '0 0 20px' }}>
-            Pulls Points Table, Orange Cap & Purple Cap from ESPNcricinfo via AI scraping.
-            Cached for 3 hours. Use manual refresh to update immediately.
+            Paste screenshots from ESPNcricinfo (Points Table + Orange Cap + Purple Cap). Claude reads them and updates automatically.
           </p>
-          <button
-            onClick={refreshStats}
-            disabled={refreshing}
-            className="btn-primary"
-            style={{ fontSize: 14, padding: '10px 20px' }}
-          >
-            {refreshing ? '⏳ Scraping ESPNcricinfo...' : '🔄 Refresh Stats Now'}
-          </button>
+
+          <div style={{ marginBottom: 16 }}>
+            <div
+              style={{
+                border: '2px dashed var(--border)', borderRadius: 10, padding: '24px',
+                textAlign: 'center', cursor: 'pointer', background: 'var(--bg)', fontSize: 13, color: 'var(--text-muted)',
+              }}
+              onDragOver={e => e.preventDefault()}
+              onDrop={e => { e.preventDefault(); handleImageFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'))); }}
+              onClick={() => document.getElementById('screenshot-input')?.click()}
+            >
+              {screenshots.length === 0 ? '📸 Click to select or drag & drop screenshots (up to 3)' : `${screenshots.length} image${screenshots.length > 1 ? 's' : ''} ready ✓ — click to add more`}
+            </div>
+            <input id="screenshot-input" type="file" accept="image/*" multiple style={{ display: 'none' }}
+              onChange={e => handleImageFiles(Array.from(e.target.files || []))} />
+          </div>
+
+          {screenshots.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              {screenshots.map((s, i) => (
+                <div key={i} style={{ position: 'relative' }}>
+                  <img src={s} alt={`screenshot ${i+1}`} style={{ height: 72, borderRadius: 6, border: '1px solid var(--border)', display: 'block' }} />
+                  <button onClick={() => setScreenshots(prev => prev.filter((_, j) => j !== i))}
+                    style={{ position: 'absolute', top: -6, right: -6, background: '#DC2626', color: '#fff', border: 'none', borderRadius: '50%', width: 18, height: 18, fontSize: 10, cursor: 'pointer', lineHeight: '18px', padding: 0 }}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button onClick={readScreenshots} disabled={refreshing || screenshots.length === 0} className="btn-primary" style={{ fontSize: 14, padding: '10px 20px' }}>
+              {refreshing && screenshots.length > 0 ? '⏳ Reading...' : '🤖 Read & Save Stats'}
+            </button>
+            <button onClick={refreshStats} disabled={refreshing} style={{ fontSize: 13, padding: '10px 16px', background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', color: 'var(--text-muted)' }}>
+              {refreshing && screenshots.length === 0 ? '⏳ Scraping...' : '🔄 Try Auto-Scrape'}
+            </button>
+          </div>
+
           {refreshMsg && (
             <p style={{ marginTop: 12, fontSize: 13, fontWeight: 600, color: refreshMsg.startsWith('✅') ? 'var(--green)' : '#DC2626' }}>
               {refreshMsg}
             </p>
           )}
-
         </div>
       )}
 
