@@ -1,23 +1,21 @@
-// Fetch IPL 2026 stats using Claude's web_search tool — no ScraperAPI needed
+// Fetch IPL 2026 stats using Claude's built-in web_search tool
 export async function scrapeIPLStats() {
   const apiKey = process.env.ANTHROPIC_API_KEY!;
 
-  const userPrompt = `Search the web for current IPL 2026 standings and return ONLY a valid JSON object — no markdown, no explanation, nothing else.
+  const messages: any[] = [{
+    role: 'user',
+    content: `Search the web for CURRENT IPL 2026 cricket standings right now. Search for:
+- "IPL 2026 points table"
+- "IPL 2026 orange cap top batters"
+- "IPL 2026 purple cap top bowlers"
 
-Required format:
-{
-  "pointsTable": [{"team":"PBKS","played":7,"won":5,"lost":2,"points":10,"nrr":"+0.50"},...all 10 teams ordered by points descending],
-  "orangeCap": [{"rank":1,"player":"V Kohli","team":"RCB","runs":320},...top 10 batters],
-  "purpleCap": [{"rank":1,"player":"A Kamboj","team":"PBKS","wickets":14},...top 10 bowlers]
-}
+After searching, return ONLY this JSON object — no markdown fences, no explanation, just raw JSON:
+{"pointsTable":[{"team":"PBKS","played":7,"won":5,"lost":2,"points":10,"nrr":"+0.50"},...],"orangeCap":[{"rank":1,"player":"V Kohli","team":"RCB","runs":320},...],"purpleCap":[{"rank":1,"player":"A Kamboj","team":"PBKS","wickets":14},...]}
 
-Use short team codes: RCB, CSK, MI, KKR, SRH, RR, PBKS, DC, GT, LSG.
-runs and wickets must be integers. Return ONLY the JSON, nothing else.`;
+Include all 10 teams in pointsTable ordered by points. Include top 10 in orangeCap and purpleCap. Use short codes: RCB CSK MI KKR SRH RR PBKS DC GT LSG. runs and wickets must be integers.`
+  }];
 
-  const messages: any[] = [{ role: 'user', content: userPrompt }];
-
-  // Agentic loop — run until end_turn (web_search may take 2–3 turns)
-  for (let turn = 0; turn < 8; turn++) {
+  for (let turn = 0; turn < 10; turn++) {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       signal: AbortSignal.timeout(45000),
@@ -27,7 +25,7 @@ runs and wickets must be integers. Return ONLY the JSON, nothing else.`;
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages,
@@ -40,36 +38,52 @@ runs and wickets must be integers. Return ONLY the JSON, nothing else.`;
     }
 
     const data = await res.json();
+    console.log(`[scrape] turn ${turn} stop_reason=${data.stop_reason} blocks=${data.content?.length}`);
 
     if (data.stop_reason === 'end_turn') {
       const text = data.content?.find((b: any) => b.type === 'text')?.text || '';
       const clean = text.replace(/```json|```/g, '').trim();
-      const parsed = JSON.parse(clean);
-      return {
-        pointsTable: parsed.pointsTable || null,
-        orangeCap:   parsed.orangeCap   || null,
-        purpleCap:   parsed.purpleCap   || null,
-        updatedAt:   new Date().toISOString(),
-        partial:     !parsed.pointsTable || !parsed.orangeCap || !parsed.purpleCap,
-      };
+      try {
+        const parsed = JSON.parse(clean);
+        return {
+          pointsTable: parsed.pointsTable || null,
+          orangeCap:   parsed.orangeCap   || null,
+          purpleCap:   parsed.purpleCap   || null,
+          updatedAt:   new Date().toISOString(),
+          partial:     !parsed.pointsTable || !parsed.orangeCap || !parsed.purpleCap,
+        };
+      } catch (e) {
+        throw new Error(`JSON parse failed. Model said: ${text.slice(0, 200)}`);
+      }
     }
 
     if (data.stop_reason === 'tool_use') {
-      // Add assistant's tool_use blocks to history
+      // Add assistant turn (includes tool_use blocks and any tool_result blocks Anthropic injects)
       messages.push({ role: 'assistant', content: data.content });
-      // Return tool results for each tool_use block
-      const toolResults = data.content
-        .filter((b: any) => b.type === 'tool_use')
-        .map((b: any) => ({
-          type: 'tool_result',
-          tool_use_id: b.id,
-          content: b.content || '',
-        }));
-      if (toolResults.length > 0) {
-        messages.push({ role: 'user', content: toolResults });
+
+      // Build tool_result blocks for any tool_use blocks that don't already have results
+      const toolUseIds = new Set(
+        data.content.filter((b: any) => b.type === 'tool_use').map((b: any) => b.id)
+      );
+      const resolvedIds = new Set(
+        data.content.filter((b: any) => b.type === 'tool_result').map((b: any) => b.tool_use_id)
+      );
+      const unresolvedToolUses = data.content.filter(
+        (b: any) => b.type === 'tool_use' && !resolvedIds.has(b.id)
+      );
+
+      if (unresolvedToolUses.length > 0) {
+        messages.push({
+          role: 'user',
+          content: unresolvedToolUses.map((b: any) => ({
+            type: 'tool_result',
+            tool_use_id: b.id,
+            content: `Search query executed: ${b.input?.query || ''}`,
+          })),
+        });
       }
     }
   }
 
-  throw new Error('Web search exceeded max turns');
+  throw new Error('Web search exceeded max turns without a final answer');
 }
