@@ -53,7 +53,14 @@ Include all 10 teams in pointsTable ordered by points. Include top 10 in orangeC
           partial:     !parsed.pointsTable || !parsed.orangeCap || !parsed.purpleCap,
         };
       } catch (e) {
-        throw new Error(`JSON parse failed. Model said: ${text.slice(0, 200)}`);
+        // Model hedged instead of outputting JSON — push back once
+        console.warn('[scrape] Model hedged, pushing back for JSON:', text.slice(0, 100));
+        messages.push({ role: 'assistant', content: data.content });
+        messages.push({
+          role: 'user',
+          content: 'You must output ONLY the raw JSON object — no explanation, no caveats about conflicting sources. Pick the most recent data you found and output the JSON right now. Nothing else.',
+        });
+        continue;
       }
     }
 
