@@ -3,7 +3,7 @@ const SCRAPER_URL = 'https://api.scraperapi.com';
 const URLS = {
   pointsTable: 'https://www.espncricinfo.com/series/ipl-2026-1510719/points-table-standings',
   orangeCap:   'https://www.espncricinfo.com/records/tournament/batting-most-runs-career/indian-premier-league-17740',
-  purpleCap:   'https://www.espncricinfo.com/records/tournament/bowling-most-wickets-career/indian-premier-league-17740',
+  purpleCap:   'https://www.espncricinfo.com/series/ipl-2026-1510719/purple-cap',
 };
 
 async function fetchPage(url: string): Promise<string> {
@@ -78,12 +78,12 @@ export async function scrapeIPLStats() {
     ptHtml ? extractWithClaude(stripHTML(ptHtml), `Extract the IPL 2026 points table from this page. Return a JSON array of all 10 teams:
 [{"team":"RCB","played":5,"won":3,"lost":2,"points":6,"nrr":"+0.452"}]
 Use short team codes (RCB, CSK, MI, KKR, SRH, RR, PBKS, DC, GT, LSG). Order by points descending.`) : Promise.reject('skipped'),
-    ocHtml ? extractWithClaude(stripHTML(ocHtml), `Extract the IPL 2026 Orange Cap top 30 batting standings from this page. The "runs" field must be an INTEGER (e.g. 320), not a string. Return JSON array exactly like this:
+    ocHtml ? extractWithClaude(stripHTML(ocHtml), `Extract the IPL 2026 Orange Cap top 10 batting standings from this page. The "runs" field must be an INTEGER (e.g. 320), not a string. Return JSON array exactly like this:
 [{"rank":1,"player":"V Sooryavanshi","team":"RR","runs":215},{"rank":2,"player":"H Klaasen","team":"SRH","runs":198},...]
-Only include players with actual run totals.`) : Promise.reject('skipped'),
-    pcHtml ? extractWithClaude(stripHTML(pcHtml), `Extract the IPL 2026 Purple Cap top 30 bowling standings from this page. The "wickets" field must be an INTEGER (e.g. 9), not a string. Return JSON array exactly like this:
+Only include the top 10 players with actual run totals.`) : Promise.reject('skipped'),
+    pcHtml ? extractWithClaude(stripHTML(pcHtml), `Extract the IPL 2026 Purple Cap top 10 bowling standings from this page. The "wickets" field must be an INTEGER (e.g. 9), not a string. Return JSON array exactly like this:
 [{"rank":1,"player":"Ravi Bishnoi","team":"RR","wickets":9},{"rank":2,"player":"M Prasidh Krishna","team":"GT","wickets":7},...]
-Only include players with actual wicket totals.`) : Promise.reject('skipped'),
+Only include the top 10 players with actual wicket totals.`) : Promise.reject('skipped'),
   ]);
 
   const pointsTable = ptExtract.status === 'fulfilled' ? ptExtract.value : null;
