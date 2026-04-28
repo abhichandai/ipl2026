@@ -38,7 +38,12 @@ export async function POST(req: NextRequest) {
             type: 'text',
             text: `Extract cricket data from these screenshots and return ONLY a valid JSON object, nothing else:
 {"pointsTable":[{"team":"PBKS","played":7,"won":6,"lost":0,"points":13,"nrr":"+1.333"},...all teams you can see],"orangeCap":[{"rank":1,"player":"Abhishek Sharma","team":"SRH","runs":380},...top players you can see],"purpleCap":[{"rank":1,"player":"A Kamboj","team":"CSK","wickets":14},...top players you can see]}
-Use short codes: RCB CSK MI KKR SRH RR PBKS DC GT LSG. runs and wickets must be integers. If a section isn't in the screenshots, use null for that key. Return ONLY the JSON.`
+Use short codes: RCB CSK MI KKR SRH RR PBKS DC GT LSG. runs and wickets must be integers. If a section isn't in the screenshots, use null for that key.
+
+CRITICAL: Player names MUST exactly match one of these canonical names (snap to closest match):
+Batters: H Klaasen, Ishan Kishan, V Sooryavanshi, RM Patidar, YBK Jaiswal, V Kohli, DC Jurel, JC Buttler, Sameer Rizvi, Shubman Gill, A Raghuvanshi, SS Iyer, SV Samson, RG Sharma, RD Rickelton, TH David, A Mhatre, PD Salt, Prabhsimran Singh, Abhishek Sharma, P Nissanka, D Padikkal, K Nitish Kumar Reddy, AM Rahane, TM Head, CPL Connolly, B Sai Sudharsan, KL Rahul, T Stubbs, AK Markram
+Bowlers: M Prasidh Krishna, Ravi Bishnoi, A Kamboj, JC Archer, Prince Yadav, JA Duffy, Rashid Khan, L Ngidi, HS Dubey, N Burger, KH Pandya, J Overton, E Malinga, V Vyshak, Sandeep Sharma, VG Arora, SN Thakur, Sakib Hussain, Mohammed Shami, PP Hinge, Suyash Sharma, Shivang Kumar, B Kumar, T Natarajan, Mukesh Kumar, XC Bartlett, Ashok Sharma, B Muzarabani, K Rabada, JD Unadkat
+If a player isn't in these lists, use the closest name from the list above. Return ONLY the JSON.`
           }
         ]
       }]
